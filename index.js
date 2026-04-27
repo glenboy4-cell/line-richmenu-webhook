@@ -15,15 +15,26 @@ app.post('/webhook', async (req, res) => {
   if (!events || events.length === 0) return;
 
   for (const event of events) {
-    if (event.type !== 'message' || event.message.type !== 'text') continue;
-    
     const userId = event.source.userId;
-    const text = event.message.text;
 
-    if (text === '下一頁') {
-      await switchMenu(userId, MENU_PAGE2);
-    } else if (text === '回主選單') {
-      await switchMenu(userId, MENU_PAGE1);
+    // 處理 postback 事件
+    if (event.type === 'postback') {
+      const data = event.postback.data;
+      if (data === 'action=next_page') {
+        await switchMenu(userId, MENU_PAGE2);
+      } else if (data === 'action=prev_page') {
+        await switchMenu(userId, MENU_PAGE1);
+      }
+    }
+
+    // 保留舊的文字訊息方式（備用）
+    if (event.type === 'message' && event.message.type === 'text') {
+      const text = event.message.text;
+      if (text === '下一頁') {
+        await switchMenu(userId, MENU_PAGE2);
+      } else if (text === '回主選單') {
+        await switchMenu(userId, MENU_PAGE1);
+      }
     }
   }
 });
