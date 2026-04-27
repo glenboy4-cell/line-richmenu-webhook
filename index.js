@@ -135,4 +135,44 @@ app.post('/webhook', async (req, res) => {
 
     if (event.type === 'message' && event.message.type === 'text') {
       const text = event.message.text;
-      if (text === '下一頁') await switchMenu(userId, MENU_PAG
+      if (text === '下一頁') await switchMenu(userId, MENU_PAGE2);
+      else if (text === '回主選單') await switchMenu(userId, MENU_PAGE1);
+      else if (text === '呼叫預約選單') await sendFlex(userId, bookingFlex);
+    }
+  }
+});
+
+async function switchMenu(userId, menuId) {
+  try {
+    await axios.post(
+      `https://api.line.me/v2/bot/user/${userId}/richmenu/${menuId}`,
+      {},
+      { headers: { Authorization: `Bearer ${TOKEN}` } }
+    );
+  } catch (err) {
+    console.error('切換選單失敗:', err.response?.data);
+  }
+}
+
+async function sendFlex(userId, flexContent) {
+  try {
+    await axios.post(
+      'https://api.line.me/v2/bot/message/push',
+      {
+        to: userId,
+        messages: [{
+          type: 'flex',
+          altText: '預約資訊',
+          contents: flexContent
+        }]
+      },
+      { headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' } }
+    );
+  } catch (err) {
+    console.error('發送Flex失敗:', err.response?.data);
+  }
+}
+
+app.get('/', (req, res) => res.send('LINE Webhook is running!'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
