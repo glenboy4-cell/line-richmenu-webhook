@@ -175,4 +175,18 @@ async function sendFlex(userId, flexContent) {
 
 app.get('/', (req, res) => res.send('LINE Webhook is running!'));
 const PORT = process.env.PORT || 3000;
+// ─── KEEP ALIVE ────────────────────────────────────
+const RENDER_URL = process.env.RENDER_URL;
+
+const keepAlive = setInterval(async () => {
+  if (!RENDER_URL) return;
+  try {
+    await axios.get(RENDER_URL + '/ping');
+    console.log('Keep-alive ping sent');
+  } catch (e) {
+    console.log('Keep-alive ping failed:', e.message);
+  }
+}, 14 * 60 * 1000);
+
+app.get('/ping', (req, res) => res.send('pong'));
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
